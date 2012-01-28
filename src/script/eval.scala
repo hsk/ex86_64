@@ -10,7 +10,7 @@ object eval {
     env += ('macros -> new Stack[(Any,Any)]())
     env += ('print -> print _ )
     env += ('void -> 'void)
-    var exp = parse(s)
+    var exp = macro.expand(parse(s),env)
     eval(exp,env)
   } catch {
     case e => println(e);-1
@@ -147,7 +147,7 @@ object eval {
 
       case (a,'@, b) => eval(a, e); eval(b, e)
 //      case ('print,Symbol("("), a,Symbol(")")) => val r = eval(a, e); println(r);r
-      case ('eval,Symbol("("),b,Symbol(")")) => eval(b,e)
+      case ('eval,Symbol("("),b,Symbol(")")) => eval(eval(macro.expand(b,e),e),e)
       case ((a,Symbol("."),Symbol(b)),Symbol("("),c,Symbol(")")) =>
         val obj = eval(a,e)
         val clazz = obj.asInstanceOf[AnyRef].getClass()
@@ -197,8 +197,8 @@ object eval {
       case ((a,Symbol("("),b,Symbol(")")),Symbol("{"),c,Symbol("}")) =>
         eval((a,Symbol("("),append(b,Symbol(","),Fun('void,c,e)),Symbol(")")), e)
       case ('q,Symbol("{"),b,Symbol("}")) => b
-//      case ('qq,Symbol("{"),b,Symbol("}")) => macro.qq(b, e)
-//      case ('qqq,Symbol("{"),b,Symbol("}")) => macro.qq(eval(b,e), e)
+      case ('qq,Symbol("{"),b,Symbol("}")) => macro.qq(b, e)
+      case ('qqq,Symbol("{"),b,Symbol("}")) => macro.qq(eval(b,e), e)
       case (a,Symbol("{"),b,Symbol("}")) => eval(a, e).asInstanceOf[Int] * eval(b, e).asInstanceOf[Int]
       case (a,Symbol("["),b,Symbol("]")) => eval(a, e).asInstanceOf[Int] - eval(b, e).asInstanceOf[Int]
       case (Symbol("("),a,Symbol(")")) => eval(a, e)
@@ -219,4 +219,3 @@ object eval {
     }}
 
 }
-

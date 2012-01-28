@@ -1,4 +1,4 @@
-package compiler
+package test
 
 import org.junit._
 import Assert._
